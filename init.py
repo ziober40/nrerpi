@@ -1,23 +1,22 @@
-import time
-
 __author__ = 'Bartek'
 
-from webservice import DarwinLdbSession
-
-darwin_sesh = DarwinLdbSession(wsdl="https://lite.realtime.nationalrail.co.uk/OpenLDBWS/wsdl.aspx",
-                               api_key="yourkeyhere")
+from delaychecker import CheckDelay
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 
-board = darwin_sesh.get_station_board('KDB', rows=40)
+sched = BlockingScheduler()
 
-while 1:
-    for b in board.train_services:
-        service = darwin_sesh.get_service_details(b.service_id)
-        delayed = ""
-        if str(service.ata) != "None" and str(service.ata) != "On time":
-                delayed = " DELAYED!!!"
 
-        output = str(b.destination_text) + " - " + str(service.ata) + " - " + str(service.sta) + delayed
-        print(output)
-    time.sleep(2)
-    print("---------------------")
+@sched.scheduled_job('interval', seconds=30)
+def timed_job():
+    checkdelay = CheckDelay()
+    delayed_trains = checkdelay.get_delayed_trains()
+    if len(delayed_trains) != 0:
+        print("following trains are delayed")
+        for dt in delayed_trains:
+            print(dt)
+    else:
+        print("no delays")
+
+
+sched.start()
