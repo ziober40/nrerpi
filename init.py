@@ -4,7 +4,6 @@ from delaychecker import CheckDelay
 from apscheduler.schedulers.blocking import BlockingScheduler
 from logger import Logger
 
-import time
 
 sched = BlockingScheduler()
 logger = Logger()
